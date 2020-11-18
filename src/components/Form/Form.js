@@ -1,28 +1,48 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { TextField, Button, Typography, Paper } from '@material-ui/core'
 import { useDispatch, useSelector } from 'react-redux';
 import FileBase from 'react-file-base64';
 import useStyles from './styles';
 
-function Form() {
+import { createPost, updatePost } from '../../actions/posts';
+
+const Form = ({currentId, setCurrentId}) => {
 
     const [postData, setPostData] = useState({
         creator: '', title: '', message: '', tags: '', selectedFile: ''
     })
 
     const classes = useStyles();
+    const dispatch = useDispatch();
+    const post = useSelector((state) => (currentId ? state.posts.find((message) => message._id === currentId) : null));
 
 
-    const handleSubmit = () => {
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // dispatch(createPost(postData)); //dispatching action
+        // dispatch(updatePost(currentId, postData));
+        if (currentId === 0) {
+            dispatch(createPost(postData));
+            clear();
+        } else {            
+            dispatch(updatePost(currentId, postData));
+            clear();
+        }
 
     }
+    useEffect(() => {
+        if (post) setPostData(post);
+        
+    }, [post])
     const clear = () => {
+        setCurrentId(0);
+        setPostData({ creator: '', title: '', message: '', tags: '', selectedFile: '' });
 
     }
     return (
         <Paper className={classes.paper}>
             <form autoComplete="off" noValidate className={`${classes.root} ${classes.form}`} onSubmit={handleSubmit}>
-                <Typography variant="h6">Creating a Memorey</Typography>
+                <Typography variant="h6">{currentId ? 'Editing': 'Creating'} a Memorey</Typography>
                 <TextField name="creator"
                     variant="outlined"
                     label="Creator"
